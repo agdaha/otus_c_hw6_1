@@ -34,7 +34,7 @@ static gint sort_files(gconstpointer a, gconstpointer b)
   {
     return file_b->is_dir - file_a->is_dir;
   }
-  return g_ascii_strncasecmp(file_a->name, file_b->name, strlen(file_a->name));
+  return g_ascii_strncasecmp(file_a->path, file_b->path, strlen(file_a->path));
 }
 
 
