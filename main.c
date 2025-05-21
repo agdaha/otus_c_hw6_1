@@ -141,11 +141,62 @@ void fill_tree_store(GtkTreeStore *store, GList *file_list, const gchar *base_pa
   g_hash_table_destroy(path_hash); 
 }
 
-int main(int argc, char *argv[])
-{
-  gtk_init(&argc, &argv);
+// int main(int argc, char *argv[])
+// {
+//   gtk_init(&argc, &argv);
 
-  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//   gtk_window_set_title(GTK_WINDOW(window), "File Explorer");
+//   gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
+//   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+//   GtkTreeStore *store = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
+//   GtkWidget *tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+//   g_object_unref(store);
+
+//   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+//   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "", renderer,"text", 0, NULL);
+//   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "Name", renderer,"text", 1, NULL);
+//   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "Size", renderer,"text", 2, NULL);
+//   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "DateTimeMod", renderer,"text", 3, NULL);
+
+//   gchar *current_dir = g_get_current_dir();     
+  
+//   if (!current_dir) {
+//     g_error("Failed to get current directory");
+//     exit(1);
+//   }
+//   g_print("Current dir: %s\n", current_dir);
+
+
+//   GList *file_list = NULL;                           
+//   file_list = scan_dir(current_dir, file_list); 
+
+//   fill_tree_store(store, file_list, current_dir); 
+//   free_file_list(file_list);                          
+//   g_free(current_dir);
+
+//   GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+//   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
+//                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+//   gtk_container_add(GTK_CONTAINER(scrolled_window), tree_view);
+//   gtk_container_add(GTK_CONTAINER(window), scrolled_window);
+
+//   gtk_widget_show_all(window);
+//   gtk_window_present(GTK_WINDOW(window));
+//   gtk_main();
+
+//   return 0;
+// }
+
+static void activate(GtkApplication *app, gpointer user_data) {
+  GtkWidget *window;
+
+  GtkTreeIter iter;
+  
+  // Создаем главное окно
+  window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "File Explorer");
   gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -160,7 +211,15 @@ int main(int argc, char *argv[])
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "Size", renderer,"text", 2, NULL);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree_view),-1, "DateTimeMod", renderer,"text", 3, NULL);
 
-  gchar *current_dir = g_get_current_dir();           
+  gchar *current_dir = g_get_current_dir();     
+  
+  if (!current_dir) {
+    g_error("Failed to get current directory");
+    exit(1);
+  }
+  g_print("Current dir: %s\n", current_dir);
+
+
   GList *file_list = NULL;                           
   file_list = scan_dir(current_dir, file_list); 
 
@@ -176,8 +235,16 @@ int main(int argc, char *argv[])
   gtk_container_add(GTK_CONTAINER(window), scrolled_window);
 
   gtk_widget_show_all(window);
+}
 
-  gtk_main();
-
-  return 0;
+int main(int argc, char **argv) {
+  GtkApplication *app;
+  int status;
+  
+  app = gtk_application_new("org.example.filebrowser", G_APPLICATION_DEFAULT_FLAGS);
+  g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+  status = g_application_run(G_APPLICATION(app), argc, argv);
+  g_object_unref(app);
+  
+  return status;
 }
